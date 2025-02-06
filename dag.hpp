@@ -11,52 +11,28 @@
 #include "graph/graph.hpp"
 
 #include <algorithm>
-#include <functional>
+
+// TODO: using namespace graph;
 
 /**
  * 
  * @namespace DAG
  * 
  */
-namespace DAG {
+namespace dag {
 
     /**
-     * @struct ComputationalDAGNode
+     * @class DAG
      * 
-     * @brief Structure for computational DAG nodes.
+     * @brief Directed acyclic graph.
      * 
-     * A computational DAG node represents a tensor operation. An instance of this
-     * structure contains everything necessary for the forward and backward computations
-     * of the corresponding node in the computational DAG.
+     * @todo implement functions to check properties (acyclic, count entries, count exits, no multiple edges, ...)
      * 
-     * @tparam T Floating point data type for numerical computations.
+     * @tparam T Node type.
      * 
      **/
-    template <typename T>
-    struct ComputationalDAGNode {
-        std::function<Tensor<T>(const std::vector<Tensor<T>>&)> tensorOperation_; /** Forward tensor operation. */
-        Tensor<T> result_;  /** Result of forward computation. */
-
-        ComputationalDAGNode();
-        ComputationalDAGNode(std::function<Tensor<T>(const std::vector<Tensor<T>>&)> tensorOperation);
-    };
-
-    /**
-     * @class ComputationalDAG
-     * 
-     * @brief Acyclic tensor operation graph.
-     * 
-     * Class for (connected) computational DAGs with a single entry point (node with in-degree 0) and a single exit point (node with out-degree 0).
-     * // @todo implement functions to check properties (acyclic, single entry, single exit, no multiple edges, ...)
-     * 
-     * @tparam T Floating point data type for numerical computations.
-     * 
-     **/
-    template<typename T>
-    class ComputationalDAG : graph::Graph<ComputationalDAGNode<T>>{
-
-            graph::NodeId entry_point_;    /** This node acts directly on the input to the DAG. */
-            graph::NodeId exit_point_;     /** The result of this node is the result of the DAG computation. */
+    template<typename NodeType>
+    class DAG : graph::Graph<NodeType>{
 
             bool is_topo_order_up_to_date_;
             std::vector<size_t> topo_order_;
@@ -67,17 +43,17 @@ namespace DAG {
 
             /**
              * 
-             * Constructs an empty computational graph.
+             * Constructs an empty directed acyclic graph.
              * 
              **/
-            ComputationalDAG();
+            DAG();
 
             /**
              * 
-             * Constructs a computational graph with n nodes, no edges and uninitialized node data.
+             * Constructs a directed acyclic graph with n nodes, no edges and uninitialized node data.
              * 
              **/
-            ComputationalDAG(size_t n);
+            DAG(size_t n);
             
             /**
              * 
@@ -85,44 +61,14 @@ namespace DAG {
              * that satisfies specification properties.
              * 
              **/
-            ComputationalDAG(std::vector<T> node_data, std::vector<std::vector<graph::NodeId>> adjacency_lists);
-
-            // TO DO: add constructor with entry and exit
+            DAG(std::vector<NodeType> node_data, std::vector<std::vector<graph::NodeId>> adjacency_lists);
 
             /**
              * 
              * @return Number of nodes in the graph.
              * 
              **/
-            using graph::Graph<ComputationalDAGNode<T>>::size;
-
-            /**
-             * 
-             * @return Reference to the entry point identifier.
-             * 
-             **/
-            graph::NodeId& getEntryPoint();
-
-            /**
-             * 
-             * @return Immutable reference to the entry point identifier.
-             * 
-             **/
-            const graph::NodeId& getEntryPoint() const;
-
-            /**
-             * 
-             * @return Reference to the exit point identifier.
-             * 
-             **/
-            graph::NodeId& getExitPoint();
-
-            /**
-             * 
-             * @return Immutable reference to the exit point identifier.
-             * 
-             **/
-            const graph::NodeId& getExitPoint() const;
+            using graph::Graph<NodeType>::size;
 
             /**
              * 
@@ -131,7 +77,7 @@ namespace DAG {
              * @return Data of node with identifier id.
              * 
              **/
-            using graph::Graph<ComputationalDAGNode<T>>::get;
+            using graph::Graph<NodeType>::get;
 
             /**
              * 
@@ -140,7 +86,7 @@ namespace DAG {
              * @return Immutable reference to vector of predecessors of node with identifier id.
              * 
              **/
-            using graph::Graph<ComputationalDAGNode<T>>::getPredecessors;
+            using graph::Graph<NodeType>::getPredecessors;
 
             /**
              * 
@@ -149,7 +95,7 @@ namespace DAG {
              * @return Immutable reference to vector of successors of node with identifier id.
              * 
              **/
-            using graph::Graph<ComputationalDAGNode<T>>::getSuccessors;
+            using graph::Graph<NodeType>::getSuccessors;
 
             /**
              * 
@@ -159,7 +105,7 @@ namespace DAG {
              * @return Identifier of the new node.
              * 
              **/
-            graph::NodeId addNode(ComputationalDAGNode<int> node_data);
+            graph::NodeId addNode(NodeType node_data);
 
             /**
              * 
@@ -186,10 +132,8 @@ namespace DAG {
              **/
             const std::vector<graph::NodeId>& topoOrder();
 
-            // ASSUMES ORDER OF OPERANDS EQUAL TO ORDER OF EDGES IN BACKWARD ADJACENCY LIST
-            Tensor<T> evaluate(const Tensor<T>& input);
     };
 
-} // namespace DAG
+} // namespace dag
 
 #include "dag.tpp"
