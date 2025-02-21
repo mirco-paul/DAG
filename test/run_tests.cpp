@@ -1,4 +1,4 @@
-#include "dag.hpp"
+#include "../dag.hpp"
 
 #include <iostream>
 
